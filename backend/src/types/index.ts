@@ -2,6 +2,7 @@ export type QuestionType = 'mcq' | 'short_answer' | 'long_answer' | 'true_false'
 export type Difficulty = 'easy' | 'medium' | 'hard';
 export type AssignmentStatus = 'draft' | 'queued' | 'processing' | 'completed' | 'failed';
 export type JobStatus = 'queued' | 'active' | 'completed' | 'failed' | 'delayed';
+export type UserRole = 'admin' | 'teacher' | 'student';
 
 export interface IQuestionTypeConfig {
   type: QuestionType;
@@ -15,6 +16,8 @@ export interface IQuestion {
   difficulty: Difficulty;
   marks: number;
   type: QuestionType;
+  options?: string[];
+  correctAnswer?: string;
 }
 
 export interface ISection {
@@ -51,4 +54,11 @@ export interface IJobProgress {
   assignmentId: string;
   status: JobStatus;
   progress: number;
+}
+
+export interface JwtPayload {
+  userId: string;
+  email: string;
+  role: UserRole;
+  schoolId?: string;
 }

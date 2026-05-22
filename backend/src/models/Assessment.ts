@@ -17,6 +17,8 @@ const QuestionSchema = new Schema({
   difficulty: { type: String, enum: ['easy', 'medium', 'hard'], required: true },
   marks: { type: Number, required: true },
   type: { type: String, enum: ['mcq', 'short_answer', 'long_answer', 'true_false'], required: true },
+  options: [{ type: String }],
+  correctAnswer: { type: String },
 }, { _id: false });
 
 const SectionSchema = new Schema<ISection>({

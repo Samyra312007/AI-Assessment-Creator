@@ -22,4 +22,6 @@ export const config = {
     model: process.env.NVIDIA_NIM_MODEL || 'meta/llama-3.1-8b-instruct',
     baseUrl: process.env.NVIDIA_NIM_BASE_URL || 'https://integrate.api.nvidia.com/v1',
   },
+
+  jwtSecret: process.env.JWT_SECRET || 'vedaai-jwt-secret-dev-only',
 };

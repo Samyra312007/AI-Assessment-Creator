@@ -34,8 +34,8 @@ export default function AssessmentsPage() {
 
   const load = async () => {
     try {
-      const data = await api.getAssignments();
-      setAssignments(data);
+      const res = await api.getAssignments();
+      setAssignments(res.data);
     } catch (err) {
       console.error(err);
     } finally {

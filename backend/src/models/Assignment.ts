@@ -2,6 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 import { AssignmentStatus, IQuestionTypeConfig } from '../types';
 
 export interface IAssignment extends Document {
+  userId?: mongoose.Types.ObjectId;
   title: string;
   subject: string;
   grade: string;
@@ -21,6 +22,7 @@ const QuestionTypeSchema = new Schema<IQuestionTypeConfig>({
 }, { _id: false });
 
 const AssignmentSchema = new Schema<IAssignment>({
+  userId: { type: Schema.Types.ObjectId, ref: 'User' },
   title: { type: String, required: true, trim: true },
   subject: { type: String, required: true, trim: true },
   grade: { type: String, required: true, trim: true },

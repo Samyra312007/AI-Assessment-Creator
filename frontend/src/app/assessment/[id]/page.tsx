@@ -8,14 +8,8 @@ import TopNav from '@/components/layout/TopNav';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
-  Download,
-  RotateCcw,
-  ChevronDown,
-  ChevronUp,
-  User,
-  Hash,
-  BookOpen,
-  FileText,
+  Download, RotateCcw, ChevronDown, ChevronUp,
+  User, Hash, BookOpen, FileText, Share2, Check,
 } from 'lucide-react';
 
 const difficultyConfig = {
@@ -220,6 +214,9 @@ export default function AssessmentPage() {
             </div>
 
             <div className="mt-8 space-y-3">
+              <Button onClick={async () => { try { const res = await fetch(`http://localhost:5000/api/share`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('vedaai_token')}` }, body: JSON.stringify({ assessmentId: assessment._id }) }); const data = await res.json(); navigator.clipboard.writeText(data.url); alert('Share link copied!'); } catch { alert('Failed to create share link'); } }} variant="outline" className="w-full rounded-[100px] border-[#dadada] gap-2">
+                <Share2 className="h-4 w-4" /> Share
+              </Button>
               <Button onClick={handleDownloadPdf} variant="outline" className="w-full rounded-[100px] border-[#dadada] gap-2">
                 <Download className="h-4 w-4" /> Download PDF
               </Button>

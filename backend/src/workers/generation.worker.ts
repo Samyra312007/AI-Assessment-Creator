@@ -3,9 +3,11 @@ import { redis } from '../config/redis';
 import { Assignment } from '../models/Assignment';
 import { Assessment } from '../models/Assessment';
 import { Job } from '../models/Job';
+import { QuestionBank } from '../models/QuestionBank';
 import { generateQuestions } from '../services/llm.service';
 import { emitJobProgress, emitJobCompleted, emitJobFailed } from '../websocket';
 import { IAssignmentInput } from '../types';
+import logger from '../utils/logger';
 
 export function createGenerationWorker(): Worker {
   const worker = new Worker(
@@ -55,6 +57,15 @@ export function createGenerationWorker(): Worker {
           },
           { upsert: true, new: true }
         );
+
+        if (assignment.userId) {
+          const bankQuestions = output.sections.flatMap(s => s.questions.map(q => ({
+            userId: assignment.userId!, subject: assignment.subject, grade: assignment.grade,
+            text: q.text, type: q.type, difficulty: q.difficulty, marks: q.marks,
+            tags: [assignment.subject, assignment.grade, q.difficulty],
+          })));
+          await QuestionBank.insertMany(bankQuestions).catch(e => logger.warn('Failed to save to question bank:', e.message));
+        }
 
         await Assignment.findByIdAndUpdate(assignmentId, { status: 'completed' });
         await Job.findOneAndUpdate({ jobId: job.id }, { status: 'completed', progress: 100 });

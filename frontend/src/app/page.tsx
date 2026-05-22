@@ -31,7 +31,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     api.getAssignments()
-      .then(setAssignments)
+      .then(res => setAssignments(res.data))
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);

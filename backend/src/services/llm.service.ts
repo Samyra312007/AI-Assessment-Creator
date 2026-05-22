@@ -9,6 +9,8 @@ const QuestionSchema = z.object({
   difficulty: z.enum(['easy', 'medium', 'hard']),
   marks: z.number(),
   type: z.enum(['mcq', 'short_answer', 'long_answer', 'true_false']),
+  options: z.array(z.string()).optional(),
+  correctAnswer: z.string().optional(),
 });
 
 const SectionSchema = z.object({
@@ -68,6 +70,11 @@ OUTPUT must be ONLY valid JSON with NO markdown, NO code fences, NO explanation.
     "timeEstimate": "3 Hours"
   }
 }
+
+For MCQ and True/False questions, include:
+- "options": ["A. option1", "B. option2", "C. option3", "D. option4"]
+- "correctAnswer": "A" (the correct option letter)
+For MCQ questions, always provide 4 options.
 
 RULES:
 - Section A = easy questions, Section B = medium, Section C = hard
@@ -173,6 +180,8 @@ function generateFallback(input: IAssignmentInput): IAssessmentOutput {
       difficulty: difficulty as 'easy' | 'medium' | 'hard',
       marks: qt.marksPerQuestion,
       type: qt.type,
+      ...(qt.type === 'mcq' ? { options: ['A. Option 1', 'B. Option 2', 'C. Option 3', 'D. Option 4'], correctAnswer: 'A' } : {}),
+      ...(qt.type === 'true_false' ? { options: ['A. True', 'B. False'], correctAnswer: 'A' } : {}),
     }));
 
     return {
