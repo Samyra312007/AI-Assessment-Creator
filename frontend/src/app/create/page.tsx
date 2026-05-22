@@ -248,10 +248,14 @@ export default function CreateAssignment() {
 
                 {errors.questionTypes && <p className="text-xs text-red-500 mt-1">{errors.questionTypes.message || errors.questionTypes.root?.message}</p>}
 
-                <div className="flex items-center gap-3 mt-4">
+                <button type="button" onClick={() => {
+                  const unselected = QUESTION_TYPES.filter(qt => !selectedTypes.has(qt.value));
+                  if (unselected.length === 0) { alert('All question types already added'); return; }
+                  toggleQuestionType(unselected[0].value);
+                }} className="flex items-center gap-3 mt-4 cursor-pointer hover:opacity-80 transition-opacity">
                   <div className="w-10 h-10 rounded-full bg-[#2a2a2a] flex items-center justify-center text-white text-sm font-bold">+</div>
                   <span className="text-sm font-bold text-[#2f2f2f]">Add another question type</span>
-                </div>
+                </button>
               </div>
 
               <div className="flex items-center gap-6">

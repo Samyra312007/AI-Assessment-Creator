@@ -19,7 +19,7 @@ export const config = {
 
   nvidiaNim: {
     apiKey: process.env.NVIDIA_NIM_API_KEY || '',
-    model: process.env.NVIDIA_NIM_MODEL || 'meta/llama-3.1-8b-instruct',
+    model: process.env.NVIDIA_NIM_MODEL || 'meta/llama-3.3-70b-instruct',
     baseUrl: process.env.NVIDIA_NIM_BASE_URL || 'https://integrate.api.nvidia.com/v1',
   },
 
