@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useSocket } from '@/lib/socket';
-import { useAssessmentStore } from '@/store/assessment';
+import { api } from '@/lib/api';
 import { Sparkles, Loader2, CheckCircle2, XCircle, Brain, FileText } from 'lucide-react';
 
 const stages = [
@@ -17,24 +17,51 @@ export default function GeneratingPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const { connect, disconnect, onStatus, onCompleted, onFailed } = useSocket(params.id);
-  const { generationProgress, generationStatus, setGenerationProgress, setGenerationStatus } = useAssessmentStore();
+  const [progress, setProgress] = useState(0);
+  const [status, setStatus] = useState('queued');
   const [error, setError] = useState<string | null>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     connect();
-    onStatus((data) => { setGenerationProgress(data.progress); setGenerationStatus(data.status); });
+
+    onStatus((data) => { setProgress(data.progress); setStatus(data.status); });
     onCompleted((data) => {
-      setGenerationProgress(100);
-      setGenerationStatus('completed');
+      setProgress(100);
+      setStatus('completed');
+      if (pollRef.current) clearInterval(pollRef.current);
       setTimeout(() => router.push(`/assessment/${data.assignmentId}`), 1000);
     });
-    onFailed((data) => { setError(data.error || 'Generation failed'); setGenerationStatus('failed'); });
-    return () => { disconnect(); };
+    onFailed((data) => { setError(data.error || 'Generation failed'); setStatus('failed'); if (pollRef.current) clearInterval(pollRef.current); });
+
+    pollRef.current = setInterval(async () => {
+      try {
+        const assignment = await api.getAssignment(params.id);
+        if (assignment.status === 'completed') {
+          setProgress(100);
+          setStatus('completed');
+          if (pollRef.current) clearInterval(pollRef.current);
+          setTimeout(() => router.push(`/assessment/${params.id}`), 1000);
+        } else if (assignment.status === 'failed') {
+          setError('Generation failed on server');
+          setStatus('failed');
+          if (pollRef.current) clearInterval(pollRef.current);
+        } else if (assignment.status === 'processing') {
+          setStatus('processing');
+          setProgress(p => Math.max(p, 30));
+        }
+      } catch { /* ignore poll errors */ }
+    }, 2000);
+
+    return () => {
+      disconnect();
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
   }, []);
 
-  const currentStage = generationStatus === 'queued' ? 0
-    : generationStatus === 'processing' ? (generationProgress < 70 ? 1 : 2)
-    : generationStatus === 'completed' ? 3
+  const currentStage = status === 'queued' ? 0
+    : status === 'processing' ? (progress < 70 ? 1 : 2)
+    : status === 'completed' ? 3
     : 0;
 
   return (
@@ -58,9 +85,9 @@ export default function GeneratingPage() {
         {!error && (
           <div className="space-y-4 mb-8">
             <div className="w-full bg-[#dadada] rounded-full h-3 overflow-hidden">
-              <div className="h-full rounded-full bg-[#2f2f2f] transition-all duration-500" style={{ width: `${Math.max(generationProgress, 10)}%` }} />
+              <div className="h-full rounded-full bg-[#2f2f2f] transition-all duration-500" style={{ width: `${Math.max(progress, 5)}%` }} />
             </div>
-            <p className="text-sm text-[#a9a9a9]">{Math.round(generationProgress)}% complete</p>
+            <p className="text-sm text-[#a9a9a9]">{Math.round(progress)}% complete</p>
           </div>
         )}
 
