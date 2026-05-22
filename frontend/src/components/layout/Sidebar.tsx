@@ -5,33 +5,37 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import {
   LayoutDashboard,
-  FilePlus2,
   FileText,
-  Settings,
-  GraduationCap,
-  Sparkles,
+  Plus,
 } from 'lucide-react';
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/create', label: 'Create Assignment', icon: FilePlus2 },
+  { href: '/create', label: 'Create Assignment', icon: Plus },
   { href: '/assessments', label: 'My Assessments', icon: FileText },
-  { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-gray-200 bg-white flex flex-col">
-      <div className="flex items-center gap-3 px-6 py-5 border-b border-gray-100">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-md">
-          <Sparkles className="h-5 w-5 text-white" />
+    <aside className="fixed left-0 top-0 z-40 h-screen w-[304px] bg-white flex flex-col overflow-hidden" style={{ boxShadow: '0px 16px 48px rgba(0,0,0,0.12)', borderRadius: '0 16px 16px 0' }}>
+      <div className="flex items-center gap-3 px-6 pt-8 pb-6">
+        <div className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-[#2f2f2f]">
+          <span className="text-white text-lg font-bold leading-none">V</span>
         </div>
-        <div>
-          <h1 className="text-sm font-bold text-gray-900">VedaAI</h1>
-          <p className="text-xs text-gray-500">Assessment Creator</p>
-        </div>
+        <h1 className="text-[28px] font-bold text-[#2f2f2f]" style={{ fontFamily: 'Bricolage Grotesque' }}>VedaAI</h1>
+      </div>
+
+      <div className="px-5">
+        <Link
+          href="/create"
+          className="flex items-center justify-center gap-2 h-[42px] w-full rounded-[100px] bg-[#262626] text-white text-base font-medium"
+          style={{ fontFamily: 'Inter, sans-serif' }}
+        >
+          <Plus className="h-4 w-4" />
+          Create Assignment
+        </Link>
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-1">
@@ -44,27 +48,32 @@ export default function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
+                'flex items-center gap-2 px-3 py-3 rounded-lg text-base transition-colors',
                 isActive
-                  ? 'bg-indigo-50 text-indigo-700'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  ? 'bg-[#efefef] text-[#2f2f2f] font-medium'
+                  : 'text-[#5d5d5d] font-normal opacity-80 hover:opacity-100'
               )}
             >
-              <Icon className={cn('h-5 w-5', isActive ? 'text-indigo-600' : 'text-gray-400')} />
+              <Icon className={cn('h-5 w-5', isActive ? 'text-[#2f2f2f]' : 'text-[#5d5d5d]')} />
               {item.label}
+              {item.label === 'My Assessments' && (
+                <span className="ml-auto inline-flex items-center justify-center h-6 px-2 rounded-[48px] bg-[#ff5623] text-white text-sm font-semibold leading-none">
+                  3
+                </span>
+              )}
             </Link>
           );
         })}
       </nav>
 
-      <div className="px-4 py-4 border-t border-gray-100">
-        <div className="flex items-center gap-3 px-3 py-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold">
+      <div className="px-4 pb-6">
+        <div className="flex items-center gap-4 p-3 rounded-2xl bg-[#efefef]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-[#2f2f2f] text-white text-sm font-bold">
             D
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900 truncate">Delhi Public School</p>
-            <p className="text-xs text-gray-500 truncate">Bokaro Steel City</p>
+          <div>
+            <p className="text-base font-bold text-[#2f2f2f] leading-tight">Delhi Public School</p>
+            <p className="text-sm text-[#5d5d5d]" style={{ fontFamily: 'Bricolage Grotesque' }}>Bokaro Steel City</p>
           </div>
         </div>
       </div>

@@ -9,5 +9,17 @@ export const config = {
     port: parseInt(process.env.REDIS_PORT || '6379', 10),
   },
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000',
-  openaiApiKey: process.env.OPENAI_API_KEY || '',
+
+  llmProvider: process.env.LLM_PROVIDER || 'nvidia-nim',
+
+  openai: {
+    apiKey: process.env.OPENAI_API_KEY || '',
+    model: process.env.OPENAI_MODEL || 'gpt-4o',
+  },
+
+  nvidiaNim: {
+    apiKey: process.env.NVIDIA_NIM_API_KEY || '',
+    model: process.env.NVIDIA_NIM_MODEL || 'meta/llama-3.1-8b-instruct',
+    baseUrl: process.env.NVIDIA_NIM_BASE_URL || 'https://integrate.api.nvidia.com/v1',
+  },
 };

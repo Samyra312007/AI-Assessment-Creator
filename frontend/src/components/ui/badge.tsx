@@ -11,8 +11,7 @@ const badgeVariants = cva(
         easy: "bg-emerald-100 text-emerald-800",
         medium: "bg-amber-100 text-amber-800",
         hard: "bg-red-100 text-red-800",
-        outline: "border border-gray-300 text-gray-600",
-        indigo: "bg-indigo-100 text-indigo-800",
+        outline: "border border-[#dadada] text-[#5d5d5d]",
       },
     },
     defaultVariants: {

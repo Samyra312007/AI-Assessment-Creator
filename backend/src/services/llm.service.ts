@@ -42,38 +42,38 @@ Generate a question paper with the following specifications:
 - Question Types & Count: ${typesDesc}
 ${input.additionalInstructions ? `- Additional Instructions: ${input.additionalInstructions}` : ''}
 
-OUTPUT FORMAT (valid JSON only):
+OUTPUT must be ONLY valid JSON with NO markdown, NO code fences, NO explanation. Schema:
 {
   "title": "${input.title}",
-  "generalInstructions": "Clear exam instructions for students",
+  "generalInstructions": "...",
   "sections": [
     {
       "name": "Section A",
-      "title": "Objective / Easy Questions",
+      "title": "Easy Questions",
       "instruction": "Attempt all questions",
       "questions": [
         {
           "number": 1,
-          "text": "Question text here",
+          "text": "...",
           "difficulty": "easy",
-          "marks": <marks>,
-          "type": "<type>"
+          "marks": <number>,
+          "type": "mcq|short_answer|long_answer|true_false"
         }
       ]
     }
   ],
   "metadata": {
-    "totalQuestions": <total>,
-    "totalMarks": <total_marks>,
+    "totalQuestions": <number>,
+    "totalMarks": <number>,
     "timeEstimate": "3 Hours"
   }
 }
 
 RULES:
-- Section A = easy questions, Section B = medium questions, Section C = hard questions (if mixture, distribute accordingly)
-- DO NOT include section D/E unless needed
-- Ensure age-appropriate and curriculum-relevant content
-- Return ONLY valid JSON. No markdown, no explanation, no code fences.`;
+- Section A = easy questions, Section B = medium, Section C = hard
+- Distribute question types across sections
+- Age-appropriate, curriculum-relevant content
+- Return ONLY the JSON object, nothing else.`;
 }
 
 function parseResponse(raw: string): IAssessmentOutput {
@@ -90,49 +90,73 @@ function parseResponse(raw: string): IAssessmentOutput {
   return AssessmentOutputSchema.parse(parsed);
 }
 
+function getClient(): { client: OpenAI; model: string; supportsJsonMode: boolean } {
+  if (config.llmProvider === 'openai' && config.openai.apiKey) {
+    return {
+      client: new OpenAI({ apiKey: config.openai.apiKey }),
+      model: config.openai.model,
+      supportsJsonMode: true,
+    };
+  }
+
+  if (config.llmProvider === 'nvidia-nim' && config.nvidiaNim.apiKey) {
+    return {
+      client: new OpenAI({
+        apiKey: config.nvidiaNim.apiKey,
+        baseURL: config.nvidiaNim.baseUrl,
+      }),
+      model: config.nvidiaNim.model,
+      supportsJsonMode: false,
+    };
+  }
+
+  return { client: null as any, model: '', supportsJsonMode: false };
+}
+
+async function callLlm(input: IAssignmentInput, strict: boolean): Promise<string> {
+  const { client, model, supportsJsonMode } = getClient();
+  const prompt = buildPrompt(input);
+
+  const systemMsg = strict
+    ? 'You are an expert educational assessment generator. Your response must be ONLY valid JSON matching the specified schema exactly. No markdown, no code fences, no explanation.'
+    : 'You are an expert educational assessment generator. Always return valid JSON.';
+
+  const userMsg = strict
+    ? prompt + '\n\nIMPORTANT: Return ONLY valid JSON. No markdown. No code fences.'
+    : prompt;
+
+  const params: any = {
+    model,
+    messages: [
+      { role: 'system' as const, content: systemMsg },
+      { role: 'user' as const, content: userMsg },
+    ],
+    temperature: strict ? 0.3 : 0.7,
+  };
+
+  if (supportsJsonMode) {
+    params.response_format = { type: 'json_object' };
+  }
+
+  const response = await client.chat.completions.create(params);
+  const content = response.choices[0]?.message?.content;
+  if (!content) throw new Error('Empty response from LLM');
+  return content;
+}
+
 export async function generateQuestions(input: IAssignmentInput): Promise<IAssessmentOutput> {
-  if (!config.openaiApiKey) {
+  const { client } = getClient();
+  if (!client) {
+    console.log('No LLM API key configured — using fallback question generator');
     return generateFallback(input);
   }
 
-  const openai = new OpenAI({ apiKey: config.openaiApiKey });
-  const prompt = buildPrompt(input);
-
-  const response = await openai.chat.completions.create({
-    model: 'gpt-4o',
-    messages: [
-      {
-        role: 'system',
-        content: 'You are an expert educational assessment generator. Always return valid JSON.',
-      },
-      { role: 'user', content: prompt },
-    ],
-    temperature: 0.7,
-    response_format: { type: 'json_object' },
-  });
-
-  const content = response.choices[0]?.message?.content;
-  if (!content) throw new Error('Empty response from LLM');
-
   try {
+    const content = await callLlm(input, false);
     return parseResponse(content);
-  } catch (parseErr) {
-    // Retry once with stricter instruction
-    const retryResponse = await openai.chat.completions.create({
-      model: 'gpt-4o',
-      messages: [
-        {
-          role: 'system',
-          content: 'You are an expert educational assessment generator. Your response must be ONLY valid JSON matching the specified schema exactly. No markdown, no code fences.',
-        },
-        { role: 'user', content: prompt + '\n\nIMPORTANT: Return ONLY valid JSON. No markdown. No code fences.' },
-      ],
-      temperature: 0.3,
-      response_format: { type: 'json_object' },
-    });
-
-    const retryContent = retryResponse.choices[0]?.message?.content;
-    if (!retryContent) throw new Error('Empty response on retry');
+  } catch (err) {
+    console.warn('First LLM attempt failed, retrying with stricter prompt:', (err as Error).message);
+    const retryContent = await callLlm(input, true);
     return parseResponse(retryContent);
   }
 }
