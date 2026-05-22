@@ -1,24 +1,15 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/AuthContext';
 import {
   LayoutDashboard, FileText, Plus, BookOpen, ClipboardList, BarChart3, LogOut, Layers, Users,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { isAuthenticated } from '@/lib/auth';
-
 export default function Sidebar() {
   const pathname = usePathname();
-  const router = useRouter();
   const { user, isTeacher, logout } = useAuth();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
-
-  const isAuthPage = pathname?.startsWith('/login') || pathname?.startsWith('/register');
-  if (!mounted || isAuthPage) return null;
 
   const teacherNav = [
     { href: '/', label: 'Dashboard', icon: LayoutDashboard },
