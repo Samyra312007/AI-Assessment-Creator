@@ -3,13 +3,14 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { api } from '@/lib/api';
+import { useAuth } from '@/lib/AuthContext';
 import type { Assessment, Assignment } from '@/types';
 import TopNav from '@/components/layout/TopNav';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
-  Download, RotateCcw, ChevronDown, ChevronUp,
-  User, Hash, BookOpen, FileText, Share2, Check,
+  Download, ChevronDown, ChevronUp,
+  User, Hash, BookOpen, FileText,
 } from 'lucide-react';
 
 const difficultyConfig = {
@@ -20,11 +21,12 @@ const difficultyConfig = {
 
 export default function AssessmentPage() {
   const params = useParams<{ id: string }>();
+  const { user } = useAuth();
   const [assessment, setAssessment] = useState<Assessment | null>(null);
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [studentName, setStudentName] = useState('');
+  const [studentName, setStudentName] = useState(user?.name || '');
   const [rollNo, setRollNo] = useState('');
   const [studentSection, setStudentSection] = useState('');
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
@@ -104,7 +106,7 @@ export default function AssessmentPage() {
       <div className="flex gap-6">
         <div className="flex-1 min-w-0 space-y-6">
           <div className="p-8 rounded-3xl text-white" style={{ background: 'rgba(23,23,23,0.8)' }}>
-            <p className="text-xl font-bold mb-6">Certainly, {studentName || 'Lakshya'}! Below is the assessment for the topic you provided.</p>
+            <p className="text-xl font-bold mb-6">Certainly, {studentName || user?.name || 'there'}! Below is the assessment for the topic you provided.</p>
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-2xl font-bold">{assessment.title}</h1>
@@ -187,46 +189,6 @@ export default function AssessmentPage() {
           </div>
         </div>
 
-        <div className="w-[280px] flex-shrink-0">
-          <div className="bg-white rounded-3xl p-6 sticky top-6" style={{ minHeight: '724px' }}>
-            <div className="space-y-6">
-              <div className="flex items-center gap-3">
-                <div className="w-3 h-3 rounded-full bg-[#4bc16c]" />
-                <div>
-                  <p className="text-sm font-semibold text-[#2f2f2f]">Upload Material</p>
-                  <p className="text-xs text-[#5d5d5d]">Step 1 of 3</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-3 h-3 rounded-full bg-[#4bc16c]" />
-                <div>
-                  <p className="text-sm font-semibold text-[#2f2f2f]">Generate</p>
-                  <p className="text-xs text-[#5d5d5d]">Step 2 of 3</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-3 h-3 rounded-full bg-[#4bc16c]" />
-                <div>
-                  <p className="text-sm font-semibold text-[#2f2f2f]">Review</p>
-                  <p className="text-xs text-[#5d5d5d]">Step 3 of 3</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-8 space-y-3">
-              <Button onClick={async () => { try { const res = await fetch(`http://localhost:5000/api/share`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('vedaai_token')}` }, body: JSON.stringify({ assessmentId: assessment._id }) }); const data = await res.json(); navigator.clipboard.writeText(data.url); alert('Share link copied!'); } catch { alert('Failed to create share link'); } }} variant="outline" className="w-full rounded-[100px] border-[#dadada] gap-2">
-                <Share2 className="h-4 w-4" /> Share
-              </Button>
-              <Button onClick={handleDownloadPdf} variant="outline" className="w-full rounded-[100px] border-[#dadada] gap-2">
-                <Download className="h-4 w-4" /> Download PDF
-              </Button>
-              <Button onClick={handleRegenerate} variant="outline" className="w-full rounded-[100px] border-[#dadada] gap-2" disabled={isRegenerating}>
-                <RotateCcw className={`h-4 w-4 ${isRegenerating ? 'animate-spin' : ''}`} />
-                {isRegenerating ? 'Regenerating...' : 'Regenerate'}
-              </Button>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

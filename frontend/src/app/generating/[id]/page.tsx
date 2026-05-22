@@ -23,6 +23,7 @@ export default function GeneratingPage() {
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
+    if (!params.id) { setError('Invalid assignment ID'); return; }
     connect();
 
     onStatus((data) => { setProgress(data.progress); setStatus(data.status); });

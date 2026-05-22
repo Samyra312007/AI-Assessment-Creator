@@ -18,7 +18,7 @@ import {
 import { api } from '@/lib/api';
 import TopNav from '@/components/layout/TopNav';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import { Plus, Upload, Trash2, Sparkles, Check, Bookmark } from 'lucide-react';
+import { Plus, Upload, Trash2, Sparkles, Check } from 'lucide-react';
 
 const QUESTION_TYPES = [
   { value: 'mcq', label: 'Multiple Choice Questions' },
@@ -52,10 +52,7 @@ type FormData = z.infer<typeof formSchema>;
 export default function CreateAssignment() {
   const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
-  const [templateName, setTemplateName] = useState('');
-  const [showTemplateInput, setShowTemplateInput] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [savingTemplate, setSavingTemplate] = useState(false);
   const [selectedTypes, setSelectedTypes] = useState<Set<string>>(new Set());
 
   const { register, control, handleSubmit, formState: { errors }, setValue, watch } = useForm<FormData>({
@@ -92,30 +89,13 @@ export default function CreateAssignment() {
       if (data.additionalInstructions) formData.append('additionalInstructions', data.additionalInstructions);
       if (file) formData.append('file', file);
       const result = await api.createAssignment(formData);
+      if (!result.assignmentId) throw new Error(result.error || 'Failed to create assignment');
       router.push(`/generating/${result.assignmentId}`);
     } catch (error: any) {
       alert(error.message || 'Failed to create assignment');
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleSaveTemplate = async () => {
-    if (!templateName.trim()) { alert('Enter a template name'); return; }
-    setSavingTemplate(true);
-    try {
-      await api.createTemplate({
-        name: templateName,
-        subject: watch('subject'),
-        grade: watch('grade'),
-        duration: watch('duration'),
-        questionTypes: fields.map(f => ({ type: f.type, count: Number(f.count), marksPerQuestion: Number(f.marksPerQuestion) })),
-        additionalInstructions: watch('additionalInstructions'),
-      });
-      setShowTemplateInput(false);
-      setTemplateName('');
-      alert('Template saved!');
-    } catch (err: any) { alert(err.message); } finally { setSavingTemplate(false); }
   };
 
   return (
@@ -126,8 +106,7 @@ export default function CreateAssignment() {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="flex gap-6">
-          <div className="flex-1 bg-white rounded-3xl p-8" style={{ maxWidth: '810px' }}>
+        <div className="bg-white rounded-3xl p-8">
             <div className="space-y-8">
               <div>
                 <div className="flex items-center gap-2 mb-1">
@@ -276,49 +255,11 @@ export default function CreateAssignment() {
 
               <div className="flex items-center gap-3 flex-wrap">
                 <Button type="button" variant="outline" className="px-8 rounded-[48px] h-11 border-[#dadada]">Previous</Button>
-                <Button type="button" onClick={() => setShowTemplateInput(!showTemplateInput)} variant="outline" className="px-6 rounded-[48px] h-11 border-[#dadada] gap-2">
-                  <Bookmark className="h-4 w-4" /> Save as Template
-                </Button>
                 <Button type="submit" className="px-8 rounded-[48px] h-11 bg-[#171717] text-white hover:bg-[#2f2f2f] gap-2" disabled={isSubmitting}>
                   {isSubmitting ? 'Generating...' : <><Sparkles className="h-4 w-4" /> Generate with AI</>}
                 </Button>
               </div>
-              {showTemplateInput && (
-                <div className="flex items-center gap-3 p-4 bg-[#f6f6f6] rounded-2xl">
-                  <Input value={templateName} onChange={e => setTemplateName(e.target.value)} placeholder="Template name..." className="flex-1 rounded-[100px] border-[#dadada] h-10" />
-                  <Button type="button" onClick={handleSaveTemplate} disabled={savingTemplate} className="rounded-[48px] bg-[#171717] text-white h-10 px-6">
-                    {savingTemplate ? 'Saving...' : 'Save'}
-                  </Button>
-                </div>
-              )}
             </div>
-          </div>
-
-          <div className="w-[280px] flex-shrink-0">
-            <div className="bg-white rounded-3xl p-6 sticky top-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-3 h-3 rounded-full bg-[#4bc16c]" />
-                <div>
-                  <p className="text-sm font-medium text-[#2f2f2f]">Upload Material</p>
-                  <p className="text-xs text-[#5d5d5d]">Step 1 of 3</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 mb-6 opacity-50">
-                <div className="w-3 h-3 rounded-full bg-[#dadada]" />
-                <div>
-                  <p className="text-sm font-medium text-[#2f2f2f]">Generate</p>
-                  <p className="text-xs text-[#5d5d5d]">Step 2 of 3</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 opacity-50">
-                <div className="w-3 h-3 rounded-full bg-[#dadada]" />
-                <div>
-                  <p className="text-sm font-medium text-[#2f2f2f]">Review</p>
-                  <p className="text-xs text-[#5d5d5d]">Step 3 of 3</p>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </form>
     </div>

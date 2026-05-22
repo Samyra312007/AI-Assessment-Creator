@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { validate, assignmentSchema, authSchema, submissionSchema } from '../middleware/validate';
+import { validate, parseJsonFields, assignmentSchema, authSchema, submissionSchema } from '../middleware/validate';
 import { upload } from '../middleware/upload';
 import { authenticate, authorize, optionalAuth } from '../middleware/auth';
 
@@ -22,7 +22,7 @@ router.post('/auth/login', validate(authSchema), login);
 router.get('/auth/me', authenticate, getMe);
 router.get('/auth/teachers', authenticate, listTeachers);
 
-router.post('/assignments', authenticate, upload.single('file'), validate(assignmentSchema), createAssignment);
+router.post('/assignments', authenticate, upload.single('file'), parseJsonFields(['questionTypes']), validate(assignmentSchema), createAssignment);
 router.get('/assignments', authenticate, getAssignments);
 router.get('/assignments/:id', authenticate, getAssignment);
 router.delete('/assignments/:id', authenticate, deleteAssignment);

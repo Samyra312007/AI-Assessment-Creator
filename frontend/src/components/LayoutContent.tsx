@@ -14,7 +14,7 @@ export default function LayoutContent({ children }: { children: React.ReactNode 
   return (
     <>
       <Sidebar />
-      <main className="ml-[304px] min-h-screen">{children}</main>
+      <main className="ml-[328px] min-h-screen">{children}</main>
     </>
   );
 }

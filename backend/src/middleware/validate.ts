@@ -1,6 +1,17 @@
 import { Request, Response, NextFunction } from 'express';
 import { z, ZodSchema } from 'zod';
 
+export function parseJsonFields(fields: string[]) {
+  return (req: Request, _res: Response, next: NextFunction) => {
+    for (const field of fields) {
+      if (typeof req.body[field] === 'string') {
+        try { req.body[field] = JSON.parse(req.body[field]); } catch { /* leave as string if parse fails */ }
+      }
+    }
+    next();
+  };
+}
+
 export function validate(schema: ZodSchema, source: 'body' | 'query' | 'params' = 'body') {
   return (req: Request, res: Response, next: NextFunction) => {
     const result = schema.safeParse(req[source]);
