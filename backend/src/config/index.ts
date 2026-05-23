@@ -8,6 +8,7 @@ export const config = {
     host: process.env.REDIS_HOST || 'localhost',
     port: parseInt(process.env.REDIS_PORT || '6379', 10),
     password: process.env.REDIS_PASSWORD || undefined,
+    url: process.env.REDIS_URL || undefined,
   },
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000',
 
