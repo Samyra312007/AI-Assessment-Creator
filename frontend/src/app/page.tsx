@@ -2,12 +2,14 @@
 
 import { useRouter } from 'next/navigation';
 import TopNav from '@/components/layout/TopNav';
+import ProtectedRoute from '@/components/ProtectedRoute';
 import { Plus, FileText, Search, X, Sparkles } from 'lucide-react';
 
 export default function Dashboard() {
   const router = useRouter();
 
   return (
+    <ProtectedRoute>
     <div className="min-h-screen" style={{ background: '#F5F5F7' }}>
       <TopNav />
 
@@ -124,5 +126,6 @@ export default function Dashboard() {
         </div>
       </div>
     </div>
+    </ProtectedRoute>
   );
 }
