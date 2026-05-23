@@ -1,4 +1,9 @@
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const rawUrl = process.env.NEXT_PUBLIC_API_URL;
+const BASE_URL = rawUrl
+  ? rawUrl.startsWith('http://') || rawUrl.startsWith('https://')
+    ? `${rawUrl}/api`
+    : `https://${rawUrl}/api`
+  : 'http://localhost:5000/api';
 
 export { BASE_URL };
 

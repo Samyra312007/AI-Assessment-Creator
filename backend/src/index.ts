@@ -17,7 +17,14 @@ const app = express();
 const server = http.createServer(app);
 
 app.set('trust proxy', 1);
-app.use(cors({ origin: config.corsOrigin, credentials: true }));
+const allowedOrigins = config.corsOrigin
+  ? config.corsOrigin.split(',').map(s => {
+      const trimmed = s.trim();
+      if (trimmed === '*' || trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+      return `https://${trimmed}`;
+    })
+  : true;
+app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser());
 

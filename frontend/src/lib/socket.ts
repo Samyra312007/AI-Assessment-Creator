@@ -3,7 +3,12 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:5000';
+const rawWsUrl = process.env.NEXT_PUBLIC_WS_URL;
+const SOCKET_URL = rawWsUrl
+  ? rawWsUrl.startsWith('http://') || rawWsUrl.startsWith('https://')
+    ? rawWsUrl
+    : `https://${rawWsUrl}`
+  : 'http://localhost:5000';
 
 interface JobStatusEvent {
   assignmentId: string;
