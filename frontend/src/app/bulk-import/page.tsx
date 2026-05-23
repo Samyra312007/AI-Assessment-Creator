@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { api } from '@/lib/api';
+import { api, BASE_URL } from '@/lib/api';
 import TopNav from '@/components/layout/TopNav';
 import { Button } from '@/components/ui/button';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -21,7 +21,7 @@ export default function BulkImportPage() {
         const [name, email, password] = line.split(',').map(s => s.trim());
         return { name, email, password };
       });
-      const res = await fetch('http://localhost:5000/api/bulk/students', {
+      const res = await fetch(`${BASE_URL}/bulk/students`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('vedaai_token')}` },
         body: JSON.stringify({ students }),
