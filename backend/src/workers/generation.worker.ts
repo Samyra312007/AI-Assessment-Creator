@@ -1,5 +1,5 @@
 import { Worker } from 'bullmq';
-import { redis } from '../config/redis';
+import { redisConnection } from '../config/redis';
 import { Assignment } from '../models/Assignment';
 import { Assessment } from '../models/Assessment';
 import { Job } from '../models/Job';
@@ -87,7 +87,7 @@ export function createGenerationWorker(): Worker {
       }
     },
     {
-      connection: redis,
+      connection: redisConnection,
       concurrency: 3,
     }
   );

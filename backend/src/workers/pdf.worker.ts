@@ -1,5 +1,5 @@
 import { Worker } from 'bullmq';
-import { redis } from '../config/redis';
+import { redisConnection } from '../config/redis';
 import { Assessment } from '../models/Assessment';
 import { generateAssessmentPdf } from '../services/pdf.service';
 import fs from 'fs';
@@ -27,7 +27,7 @@ export function createPdfWorker(): Worker {
       return { filePath };
     },
     {
-      connection: redis,
+      connection: redisConnection,
       concurrency: 2,
     }
   );

@@ -1,8 +1,8 @@
 import { Queue } from 'bullmq';
-import { redis } from '../config/redis';
+import { redisConnection } from '../config/redis';
 
 export const generationQueue = new Queue('question-generation', {
-  connection: redis,
+  connection: redisConnection,
   defaultJobOptions: {
     attempts: 3,
     backoff: { type: 'exponential', delay: 2000 },
@@ -12,7 +12,7 @@ export const generationQueue = new Queue('question-generation', {
 });
 
 export const pdfQueue = new Queue('pdf-export', {
-  connection: redis,
+  connection: redisConnection,
   defaultJobOptions: {
     attempts: 2,
     backoff: { type: 'exponential', delay: 3000 },
